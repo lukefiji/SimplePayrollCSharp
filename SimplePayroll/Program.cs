@@ -9,7 +9,68 @@ namespace SimplePayroll
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            List<Staff> myStaff = new List<Staff>();
+            FileReader fr = new FileReader();
+            int month = 0;
+            int year = 0;
+
+            while (year == 0)
+            {
+                Console.Write("\nPlease enter the year: ");
+
+                try
+                {
+                    year = Convert.ToInt32(Console.ReadLine());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: Please enter a valid year");
+                }
+            }
+
+            while (month == 0)
+            {
+                Console.Write("\nPlease enter the month: ");
+
+                try
+                {
+                    month = Convert.ToInt32(Console.ReadLine());
+
+                    if (month < 1 || month > 12)
+                    {
+                        Console.WriteLine("Error: Please enter a valid month");
+                        month = 0;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: Please enter a valid month");
+                }
+            }
+
+            myStaff = fr.ReadFile();
+
+            for (int i = 0; i < myStaff.Count; i++)
+            {
+                try
+                {
+                    Console.Write("\nEnter hours worked for {0}: ", myStaff[i].NameOfStaff);
+                    int hours = Convert.ToInt32(Console.ReadLine());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: Please enter a valid number");
+                    i--;
+                }
+            }
+
+            PaySlip ps = new PaySlip(month, year);
+            ps.GeneratePaySlip(myStaff);
+            ps.GenerateSummary(myStaff);
+
+            Console.Read();
+
         }
     }
 
@@ -17,9 +78,11 @@ namespace SimplePayroll
     {
         private float hourlyRate;
         private int hWorked;
+
         public float TotalPay { get; protected set; }
         public float BasicPay { get; private set; }
         public string NameOfStaff { get; private set; }
+
         public int HoursWorked
         {
             get
@@ -28,7 +91,7 @@ namespace SimplePayroll
             }
             set
             {
-                hWorked = value > 0 ? hWorked : 0;
+                hWorked = value > 0 ? value : 0;
             }
         }
 
@@ -48,7 +111,11 @@ namespace SimplePayroll
 
         public override string ToString()
         {
-            return "Name: " + NameOfStaff + "\nHourly Rate: " + hourlyRate + "\nHours Worked: " + HoursWorked + "\nTotal Pay: " + TotalPay + "\n Basic Pay: " + BasicPay;
+            return "Name: " + NameOfStaff
+                + "\nHourly Rate: "+ hourlyRate
+                + "\nHours Worked: " + HoursWorked
+                + "\nTotal Pay: " + TotalPay
+                + "\n Basic Pay: " + BasicPay;
         }
     }
 
@@ -56,6 +123,7 @@ namespace SimplePayroll
     class Manager : Staff
     {
         private const float managerHourlyRate = 50;
+
         public int Allowance { get; private set; }
 
         public Manager(string name) : base(name, managerHourlyRate) { }
@@ -75,7 +143,12 @@ namespace SimplePayroll
 
         public override string ToString()
         {
-            return "Name: " + NameOfStaff + "\n Manager Hourly Rate: " + managerHourlyRate + "\nHours Worked: " + HoursWorked + "\nAllowance: " + Allowance + "\nTotal Pay: " + TotalPay + "\n Basic Pay: " + BasicPay;
+            return "Name: " + NameOfStaff
+                + "\n Manager Hourly Rate: "+ managerHourlyRate +
+                "\nHours Worked: " + HoursWorked +
+                "\nAllowance: " + Allowance +
+                "\nTotal Pay: " + TotalPay +
+                "\n Basic Pay: " + BasicPay;
         }
 
     }
@@ -205,6 +278,7 @@ namespace SimplePayroll
                     sw.WriteLine("==============================");
                     sw.WriteLine("Total Pay: {0}", f.TotalPay);
                     sw.WriteLine("==============================");
+
                     sw.Close();
                 }
             }
@@ -219,6 +293,7 @@ namespace SimplePayroll
                 select new { employee.NameOfStaff, employee.HoursWorked };
 
             string path = "summary.txt";
+
             using (StreamWriter sw = new StreamWriter(path))
             {
                 sw.WriteLine("Staff with less than 10 working hours");
@@ -226,7 +301,7 @@ namespace SimplePayroll
 
                 foreach (var employee in result)
                 {
-                    Console.WriteLine("Name of Staff: {0}, Hours Worked: {1}", employee.NameOfStaff, employee.HoursWorked);
+                    sw.WriteLine("Name of Staff: {0}, Hours Worked: {1}", employee.NameOfStaff, employee.HoursWorked);
                 }
 
                 sw.Close();
